@@ -1,0 +1,264 @@
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+<!-- Bootstrap CSS -->
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{%static 'compare_app/templates.css' %}">
+
+<!-- nowe - do wykasowania pozniej -->
+<!--  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+ -->
+
+    <title>Bullion Market</title>
+
+    
+
+  </head>
+
+  <body>
+
+    {% load compare_app_extras %}
+
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <a class="navbar-brand" href="#">Bullion Market</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'app-home' %}">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <!-- <li class="nav-item">
+            <a class="nav-link" href="#">Link</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" href="#">Disabled</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+            <div class="dropdown-menu" aria-labelledby="dropdown01">
+              <a class="dropdown-item" href="#">Action</a>
+              <a class="dropdown-item" href="#">Another action</a>
+              <a class="dropdown-item" href="#">Something else here</a>
+            </div>
+          </li> -->
+        </ul>
+  <!--       <form class="form-inline my-2 my-lg-0">
+          <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form> -->
+      </div>
+    </nav>
+
+    <main role="main" class="container">
+ <div class="card-body">
+ <!-- <form method = "GET" action = "."> -->
+<form method = "GET" id ="form2" class = "form" enctype="multipart/form-data" >
+  <div class="form-row">
+    <div class="form-group col-8">
+        <label for="filter_by_name">Filtruj po nazwie</label>
+      <div class="input-group">
+
+        <input class="form-control py2 border-right-0 border" type="search" name="filter_by_name" placeholder="Filtruj po nazwie..."/>
+        <span class="input-group-append">
+          <div class="input-group-text bg-transparent">
+            <i class="fa fa-search"></i>
+          </div>
+        </span>
+      </div>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="filter_by_shop">Filtruj po sklepie</label>
+      <select id="filter_by_shop" class="form-control" name="filter_by_shop">
+        <option selected>Wszystkie sklepy</option>
+        <option>GoldSilver.be</option>
+        <option>Europeanmint.com</option>
+        <option>Srebrnamennica.pl</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+  <div class="input-group col-md-12 checkboxes">
+    <!-- <div class="checkboxes"> -->
+      <span>
+        <input type="checkbox" name="one_tenth_oz" value="True"\>
+        <label >1/10 oz</label>
+        <input type="checkbox" name="half_oz" value="True"\>
+        <label >1/2 oz</label>
+        <input type="checkbox" name="quarter_oz" value="True"\>
+        <label >1/4 oz</label>
+        <input type="checkbox" name="one_oz" value="True"\>
+        <label >1 oz</label>
+        <input type="checkbox" name="two_oz" value="True"\>
+        <label >2 oz</label>
+        <input type="checkbox" name="five_oz" value="True"\>
+        <label >5 oz</label>
+        <input type="checkbox" name="select-all" id="select-all" value=""\>
+        <label >Zaznacz/odznacz wszystkie</label>
+       
+      </span>
+     
+    </div>
+  </div>
+ <p></p>
+  
+  <div class="form-row">
+    <div class="form-group col-8 "><button type="submit" class="btn btn-primary float-left">Wyślij</button></div>
+
+    <div class="form-group col-2 ">
+        <label for="staticEmail2" class="sr-only"></label>
+        <input type="text" style=" text-align: center;" readonly class="form-control-plaintext" id="staticEmail2" 
+        value="Strony: {{queryset.number}}/{{queryset.paginator.num_pages}}">
+    </div>
+    <div class="form-group col-2 ">
+
+    <nav>
+      <ul class="pagination justify-content-end" >
+
+        <li class="page-item">
+          <a class="page-link" href="{% my_url 1 'page' request.GET.urlencode %}" aria-label="First">
+            <span aria-hidden="true">&laquo;</span>
+            <span class="sr-only">First</span>
+          </a>
+        </li>
+        {% if not queryset.has_previous %}
+          <li class="page-item active"><a class="page-link" href="{% my_url 1 'page' request.GET.urlencode %}">1</a></li>
+          <li class="page-item"><a class="page-link" href="{% my_url 2 'page' request.GET.urlencode %}">2</a></li>
+          <li class="page-item"><a class="page-link" href="{% my_url 3 'page' request.GET.urlencode %}">3</a></li>     
+        {% elif queryset.has_next %}
+          <li class="page-item"><a class="page-link" href="{% my_url queryset.previous_page_number 'page' request.GET.urlencode %}">{{queryset.previous_page_number}}</a></li>
+          <li class="page-item active"><a class="page-link" href="{% my_url queryset.number 'page' request.GET.urlencode %}">{{queryset.number}}</a></li>
+          <li class="page-item"><a class="page-link" href="{% my_url queryset.next_page_number 'page' request.GET.urlencode %}">{{queryset.next_page_number}}</a></li>        
+        {% else %}
+          <li class="page-item"><a class="page-link" href="{% my_url queryset.previous_page_number|add:-1 'page' request.GET.urlencode %}">{{queryset.previous_page_number|add:-1}}</a></li>
+          <li class="page-item"><a class="page-link" href="{% my_url queryset.previous_page_number 'page' request.GET.urlencode %}">{{queryset.previous_page_number}}</a></li>
+          <li class="page-item active"><a class="page-link" href="{% my_url queryset.paginator.num_pages 'page' request.GET.urlencode %}">{{queryset.paginator.num_pages}}</a></li>        
+        {% endif %}
+
+        <li class="page-item">
+          <a class="page-link" href="{% my_url queryset.paginator.num_pages 'page' request.GET.urlencode%}" aria-label="Last">
+            <span aria-hidden="true">&raquo;</span>
+            <span class="sr-only">Last</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+    </div>
+  </div>
+</form>
+{% load compare_app_extras %}
+</div>
+
+
+
+
+
+
+<!-- 
+<div class = "row">
+  <div class = "col">
+    <div class = "card card-body">
+      <form method = "GET">
+
+        <button class="btn btn-primary" type="submit">Search</button>
+        {{myFilter.form}}
+      </form>
+    </div>
+  </div>
+</div> -->
+
+
+<table class="table table-striped table-sm">
+  <thead>
+              <TR class="solid" ><FORM method="GET">
+             <td><input type="submit" class="btn" value="Sortuj po nazwie" name="btn_order_name" /></td>
+             <td></td>
+             <td><input type="submit" class="btn" value="Sortuj po cenie" name="btn_order_price" /></td>
+              <td><input type="submit" class="btn" value="Sortuj po cenie/oz" name="btn_order_peroz" /></td>
+          </FORM></TR>
+
+<tr><th >Nazwa</th><th>Waga</th><th>Cena</th><th>Cena/oz</th><th>Metal</th>
+            <th>Sklep</th><th>LOAD_TIME</th></tr>
+  </thead>
+  <tbody>
+
+           {% for x in queryset %}
+
+          <tr class="solid" > 
+            <td>{{x.NAME}}</td>
+            <td>{{x.WEIGHT}}</td>
+            <td>{{x.PRICE_PLN}}</td>
+            <td>{{x.PRICE_PER_OZ_PLN}}</td>
+            <td>{{x.METAL}}</td>
+            {%if x.IMG_LINK == '' or x.IMG_LINK is NONE%}
+              <td> <a class="w-100 pointer" href = '{{x.LINK}}'>{{x.SHOP}}</a>
+            {% else %}
+              <td> <a class="w-100 pointer" data-toggle="popover-hover" 
+              data-img={{x.IMG_LINK}} href = '{{x.LINK}}'>{{x.SHOP}}</a>
+            {%endif%}
+            
+            </td>
+            <td>{{x.LOAD_TIME}}
+            </td>
+          </tr>
+
+            {% endfor %}      
+
+
+  </tbody>
+  
+</table>
+
+</main><!-- /.container -->
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+<script src="https://kit.fontawesome.com/780a20832a.js" crossorigin="anonymous"></script>
+<script src="{% static 'toggle_all.js' %}"></script>
+<script src="{% static 'popover_image.js' %}"></script>
+ <script>
+  $(document).ready(function () {
+$('#dtBasicExample').DataTable();
+$('.dataTables_length').addClass('bs-select');
+});
+ </script>
+
+
+<!-- nowe do wykasowania -->
+<!--    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.18/af-2.3.0/b-1.5.2/b-colvis-1.5.2/b-flash-1.5.2/b-html5-1.5.2/b-print-1.5.2/cr-1.5.0/fh-3.1.4/r-2.2.2/datatables.min.css"/>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.18/af-2.3.0/b-1.5.2/b-colvis-1.5.2/b-flash-1.5.2/b-html5-1.5.2/b-print-1.5.2/cr-1.5.0/fh-3.1.4/r-2.2.2/datatables.min.js"></script>
+<script>
+    $(document).ready( function () {
+    $('#table_id').DataTable({
+
+    dom: 'B<"clear">lfrtip',
+    buttons: {
+        name: 'primary',
+
+
+        }}
+    );
+} );
+</script> -->
+
+
+</body>
+</html>
