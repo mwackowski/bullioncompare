@@ -9,23 +9,9 @@ from .forms import InputForm
 
 from .models import *
 
-v_pricenew.objects.annotate(PRICE_PER_OZ_ORDERED=Cast('PRICE_PER_OZ', IntegerField())).order_by('PRICE_PER_OZ_ORDERED', 'PRICE_PER_OZ')
+pricings.objects.annotate(PRICE_PER_OZ_ORDERED=Cast('PRICE_PER_OZ', IntegerField())).order_by('PRICE_PER_OZ_ORDERED', 'PRICE_PER_OZ')
 
-def home(request):
-	# form = InputForm()
-	qs=v_pricenew.objects.all()
-	myFilter = PriceFilter(request.GET, queryset=qs)
-	# myOtherFilter = OtherFilter()
-	qs = myFilter.qs
 
-	context = {
-        # 'myFilter': myFilter,
-        'qs': qs,
-		'myFilter': myFilter,
-		
-	}
-	
-	return render(request, 'compare_app/home.html',  context)	
 
 def contact(request):
 	return render(request, 'compare_app/contact.html', {'title': 'Strona kontaktowa'})
@@ -34,7 +20,7 @@ def is_valid_queryparameter(param):
 	return param != '' and param is not None
 
 class MainListView(ListView):
-	model = v_pricenew
+	model = pricings
 
 	template_name = 'compare_app/forms.html'
     
@@ -44,10 +30,10 @@ class MainListView(ListView):
 
 	# 	return context
 	def get(self, request):
-		qs = v_pricenew.objects.all().order_by('PRICE') #.annotate(num_notes=Count('note'))
+		qs = pricings.objects.all().order_by('PRICE') #.annotate(num_notes=Count('note'))
 		price_filter = PriceFilter(request.GET, queryset=qs)
-		paginator = Paginator(price_filter.qs, 30)
 		page = request.GET.get('page')
+		paginator = Paginator(price_filter.qs, 10)	
 		try:
 			prices = paginator.page(page)
 		except PageNotAnInteger:
@@ -61,11 +47,12 @@ class MainListView(ListView):
 		end_index = index + 5 if index <= max_index - 5 else max_index
 		page_range = paginator.page_range[start_index:end_index]
 
+		records_page_obj = paginator.get_page(page)
 		return render(request, self.template_name, {
 			'prices': prices,
 			'filter': price_filter.form,
 			'page_range': page_range,
-			'queryset': price_filter.qs
+			'queryset': records_page_obj #price_filter.qs
 		})
 
 def BootstrapFilterView(request):
@@ -79,8 +66,8 @@ def BootstrapFilterView(request):
 	'five_oz': 5,
 	}
 
-	qs = v_pricenew.objects.all().order_by('PRICE')
-	qs2 = v_pricenew.objects.all().order_by('PRICE')
+	qs = pricings.objects.all().order_by('PRICE')
+	qs2 = pricings.objects.all().order_by('PRICE')
 
 	filter_by_name = request.GET.get('filter_by_name')
 	id_exact_query = request.GET.get('filter_by_all')
@@ -93,13 +80,13 @@ def BootstrapFilterView(request):
 	five_oz = request.GET.get('five_oz')
 
 	if(request.GET.get('btn_order_name')):
-		qs = v_pricenew.objects.all().order_by('NAME')
+		qs = pricings.objects.all().order_by('NAME')
 
 	if(request.GET.get('btn_order_peroz')):
-		qs = v_pricenew.objects.all().order_by('PRICE_PER_OZ')
+		qs = pricings.objects.all().order_by('PRICE_PER_OZ')
 
 	if(request.GET.get('btn_order_price')):
-		qs = v_pricenew.objects.all().order_by('PRICE')
+		qs = pricings.objects.all().order_by('PRICE')
 
 	if is_valid_queryparameter(filter_by_name):
 		qs = qs.filter(NAME__icontains=filter_by_name)
@@ -151,3 +138,38 @@ def BootstrapFilterView(request):
 		# 'myFilter': myFilter,
 	}
 	return render(request, 'compare_app/main.html', context)
+
+
+
+class HomeListView(ListView):
+
+	model = pricings
+
+	template_name = 'compare_app/home.html'
+    
+
+	def get(self, request):
+		qs = pricings.objects.all().order_by('PRICE') #.annotate(num_notes=Count('note'))
+		price_filter = PriceFilter(request.GET, queryset=qs)
+		page = request.GET.get('page')
+		paginator = Paginator(price_filter.qs, 10)	
+		try:
+			prices = paginator.page(page)
+		except PageNotAnInteger:
+			prices = paginator.page(1)
+		except EmptyPage:
+			prices = paginator.page(paginator.num_pages)
+
+		index = paginator.page_range.index(prices.number)
+		max_index = len(paginator.page_range)
+		start_index = index - 5 if index >= 5 else 0
+		end_index = index + 5 if index <= max_index - 5 else max_index
+		page_range = paginator.page_range[start_index:end_index]
+
+		records_page_obj = paginator.get_page(page)
+		return render(request, self.template_name, {
+			'prices': prices,
+			'filter': price_filter.form,
+			'page_range': page_range,
+			'queryset': records_page_obj #price_filter.qs
+		})

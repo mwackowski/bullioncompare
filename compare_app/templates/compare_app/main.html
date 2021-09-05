@@ -33,7 +33,7 @@
     {% load compare_app_extras %}
 
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-      <a class="navbar-brand" href="#">Bullion Market</a>
+      <a class="navbar-brand" href="#" id = "#logo">Bullion Market</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -200,6 +200,7 @@
            {% for x in queryset %}
 
           <tr class="solid" > 
+
             <td>{{x.NAME}}</td>
             <td>{{x.WEIGHT}}</td>
             <td>{{x.PRICE_PLN}}</td>
@@ -224,7 +225,7 @@
   
 </table>
 
-</main><!-- /.container -->
+</main>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
@@ -232,32 +233,6 @@
 <script src="https://kit.fontawesome.com/780a20832a.js" crossorigin="anonymous"></script>
 <script src="{% static 'toggle_all.js' %}"></script>
 <script src="{% static 'popover_image.js' %}"></script>
- <script>
-  $(document).ready(function () {
-$('#dtBasicExample').DataTable();
-$('.dataTables_length').addClass('bs-select');
-});
- </script>
-
-
-<!-- nowe do wykasowania -->
-<!--    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.18/af-2.3.0/b-1.5.2/b-colvis-1.5.2/b-flash-1.5.2/b-html5-1.5.2/b-print-1.5.2/cr-1.5.0/fh-3.1.4/r-2.2.2/datatables.min.css"/>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.18/af-2.3.0/b-1.5.2/b-colvis-1.5.2/b-flash-1.5.2/b-html5-1.5.2/b-print-1.5.2/cr-1.5.0/fh-3.1.4/r-2.2.2/datatables.min.js"></script>
-<script>
-    $(document).ready( function () {
-    $('#table_id').DataTable({
-
-    dom: 'B<"clear">lfrtip',
-    buttons: {
-        name: 'primary',
-
-
-        }}
-    );
-} );
-</script> -->
 
 
 </body>

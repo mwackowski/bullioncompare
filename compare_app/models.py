@@ -11,7 +11,7 @@ class pricings(models.Model):
     PRICE = models.FloatField()
     PRICE_PER_OZ = models.CharField(max_length=20) 
     CURRENCY = models.CharField(max_length=10)
-    AVAILABILITY = models.CharField(max_length=100)
+    AVAILABILITY = models.CharField(max_length=200)
     LINK = models.CharField(max_length=300)
     LOAD_TIME = models.CharField(max_length=30)
     SHOP = models.CharField(max_length=40)
@@ -38,11 +38,4 @@ class v_pricenew(models.Model):
     class Meta:
         managed = False
         db_table = 'compare_app_v_pricenew' 
-    
-    
-
-    class currencies(models.Model):
-        VALUE = models.FloatField()
-        LOAD_TIME = models.CharField(max_length=30)
-        CURRENCY_CODE = models.CharField(max_length=20)
 

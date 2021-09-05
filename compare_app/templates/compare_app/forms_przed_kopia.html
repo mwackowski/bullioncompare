@@ -1,3 +1,7 @@
+
+
+
+
 <!-- {% load crispy_forms_tags %} -->
 {% load static %}
 {% load compare_app_extras %}
@@ -84,7 +88,7 @@
               <div class="col-sm-3">
               <input type="checkbox" name="select-all" id="select-all" value=""\>
               <label >Zaznacz/odznacz wszystkie</label></div>
-
+          
           <div class="col-sm-9 ">
             <label for="staticEmail2" class="sr-only"></label>
             <input type="text" style=" text-align: right;" readonly class="form-control-plaintext" id="staticEmail2"
@@ -148,7 +152,7 @@
   <th>Nazwa</th>
   <th>Waga</th>
   <th>Cena</th>
-  <!--<th>Cena/oz</th>-->
+  <!-- <th>Cena/oz</th> -->
   <!--<th>Metal</th>-->
   <th>Sklep</th>
   <!-- <th class="col-md-1">LOAD_TIME</th> -->
@@ -166,7 +170,7 @@
             <td >{{x.NAME}}</td>
             <td>{{x.WEIGHT}}</td>
             <td>{{x.PRICE_PLN}}</td>
-            <!--<td >{{x.PRICE_PER_OZ_PLN}}</td>-->
+            <!-- <td >{{x.PRICE_PER_OZ_PLN}}</td> -->
             <!--<td>{{x.METAL}}</td>-->
             {%if x.IMG_LINK == '' or x.IMG_LINK is NONE%}
             <td> <a class="w-100 pointer" href = '{{x.LINK}}'>{{x.SHOP}}</a>

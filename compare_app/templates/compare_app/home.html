@@ -1,45 +1,13 @@
-<!-- templatka -->
-{% extends "compare_app/base.html"%}  
-{% load crispy_forms_tags %}
-<!-- {% block content %}
-	{% for post in posts %}
-		<article class="media content-section">
-		  <div class="media-body">
-		    <div class="article-metadata">
-		      <a class="mr-2" href="#">{{ post.author }}</a>
-		      <small class="text-muted">{{ post.date_posted }}</small>
-		    </div>
-		    <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
-		    <p class="article-content">{{ post.content }}</p>
-		  </div>
-		</article>
-	{% endfor %}
-{% endblock content %} -->
-{% block content_table %}
+
+
+
 <FORM method="GET">
 
-	<div class="row">
-		<div class="col">
-			{{myFilter.form|crispy}}
+	<div>
+		<div >
+
 		</div>
 	</div>
 
 	<button type = "submit" class="btn btn-primary">Wyślij</button>
 </FORM>
-	<div class='container'>
-		<table  class="table table-striped">
-			<table class="table table-hover">
-
-			<thead class="thead-light">
-			<tr><th>NAME</th><th>WEIGHT</th><th>PRICE</th><th>LINK</th></th>
-			</thead>
-			<tr>
-				{% for x in qs %}
-			<tr>
-				<td>{{x.NAME}}</td><td>{{x.WEIGHT}}</td><td>{{x.PRICE}}</td><td>{{x.LINK}}</td>
-			</tr>
-				{% endfor %}	  		
-		</table>
-		</table>
-	</div>
-{% endblock content_table %}

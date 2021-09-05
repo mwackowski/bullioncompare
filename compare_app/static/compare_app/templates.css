@@ -1,8 +1,10 @@
 body {
     margin-top: 5rem;
+    background: #fafafa;
+    color: #333333;
+
   }
-  
-  
+
 
    label  {
     /* padding: 120px; */
@@ -17,28 +19,25 @@ input[type=checkbox]
     -o-transform: scale(1.5); /* Opera */
     padding: 120px;
     margin: 10px 5px 0px 3px;
-
   }
-  
+
   .pointer {
       cursor: pointer;
     }
   .clickable-row:hover {
       background: #fafafa;
     }
-  
-  
-  table.dataTable thead .sorting:after,
-  table.dataTable thead .sorting:before,
-  table.dataTable thead .sorting_asc:after,
-  table.dataTable thead .sorting_asc:before,
-  table.dataTable thead .sorting_asc_disabled:after,
-  table.dataTable thead .sorting_asc_disabled:before,
-  table.dataTable thead .sorting_desc:after,
-  table.dataTable thead .sorting_desc:before,
-  table.dataTable thead .sorting_desc_disabled:after,
-  table.dataTable thead .sorting_desc_disabled:before {
-  bottom: .5em;
-  }
-  
-  
+
+
+    .col-1 {width: 8.33%;}
+    .col-2 {width: 16.66%;}
+    .col-3 {width: 25%;}
+    .col-4 {width: 33.33%;}
+    .col-5 {width: 41.66%;}
+    .col-6 {width: 50%;}
+    .col-7 {width: 58.33%;}
+    .col-8 {width: 66.66%;}
+    .col-9 {width: 75%;}
+    .col-10 {width: 83.33%;}
+    .col-11 {width: 91.66%;}
+    .col-12 {width: 100%;}
