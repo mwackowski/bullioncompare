@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 from bs4 import BeautifulSoup as bs
 import requests
 import pandas as pd
@@ -13,6 +7,10 @@ import numpy as np
 import json
 import datetime
 import math
+
+import sqlite3
+from db_path import DB_PATH
+
 srebrnaMennicaUrlsBase = ['https://srebrnamennica.pl/10-srebro', 'https://srebrnamennica.pl/13-zloto']
 
 
@@ -32,40 +30,37 @@ for x in range(len(srebrnaMennicaUrlsBase)):
             else:
                 srebrnaMennicaUrlsPaged.append('https://srebrnamennica.pl/13-zloto?page=' + str(page+1))
 
-
-# In[3]:
-
-
 def find_weight(x):
 
-    weights_dict = {'1/25': 0.04, '1/20': 0.05, '1/10': 0.1, '1/4': 0.25, '1/2': 0.5, '1': 1,
+    weights_dict = {'1/25': 0.04, '1/20': 0.05, '1/10': 0.1, '1/4': 0.25, '1/2': 0.5, '1': 1, 
                     '2': 2, '5': 5, '10': 10, '20': 20, '30': 30, '100': 100, '50': 50}
-
+    
     rev_weight_dict = {
-                    'oz': { 0.04: '1/25 g', 0.05: '1/20 oz', 0.1: '1/10 oz', 0.25: '1/4 oz', 0.5: '1/2 oz',
-                   1: '1 oz', 2: '2 oz', 5: '5 oz', 10: '10 oz', 20: '20 oz', 50: '50 oz',
+                    'oz': { 0.04: '1/25 g', 0.05: '1/20 oz', 0.1: '1/10 oz', 0.25: '1/4 oz', 0.5: '1/2 oz', 
+                   1: '1 oz', 2: '2 oz', 5: '5 oz', 10: '10 oz', 20: '20 oz', 50: '50 oz', 
                   0: 0},
-
-                   'g' : { 0.04: '1/25 g', 0.05: '1/20 g', 0.1: '1/10 g', 0.25: '1/4 g', 0.5: '1/2 g',
+        
+                   'g' : { 0.04: '1/25 g', 0.05: '1/20 g', 0.1: '1/10 g', 0.25: '1/4 g', 0.5: '1/2 g', 
                    1: '1 g', 2: '2 g', 20: '20 g', 30: '30 g', 5: '5 g', 10: '10 g', 50: '50 g', 100: '100 g'},
-
+        
                   'kg': {1: '1 kg', 2: '2 kg', 5: '5 kg', 10: '10 kg'},
-                  'inne': {0: 'inne'}
+                  'other': {0: 'other'}
                   }
     exclude_list = ['pakiet', 'zł']
     value = None
     found = False
     for excluded in exclude_list:
-        if re.search(rf'\b{excluded}\b', x, re.IGNORECASE):
-            value = (0, 'inne')
-            break;
+        if re.search(rf"\b{excluded}\b", x, re.IGNORECASE):
+            value = (0, 'other')
+            break
         else:
             for a in weights_dict:
-                if re.search(rf'\b{a}g\b', x, re.IGNORECASE) or re.search(rf'\b{a} g\b', x, re.IGNORECASE) or                 re.search(rf'\b{a}gram\b', x, re.IGNORECASE) or re.search(rf'\b{a}grams\b', x, re.IGNORECASE) or                 re.search(rf'\b{a} gram\b', x, re.IGNORECASE) or re.search(rf'\b{a} grams\b', x, re.IGNORECASE) or re.search(rf'\b{a} gramów\b', x, re.IGNORECASE):
+                if re.search(rf"\b{a}[ ]g\b", x, re.IGNORECASE) or re.search(rf"\b{a}[ ]gram\b", x, re.IGNORECASE) \
+                or re.search(rf"\b{a}[ ]gramów\b", x, re.IGNORECASE):
                     value = (weights_dict[a], 'g')
-                elif re.search(rf'\b{a}kilo\b', x, re.IGNORECASE) or re.search(rf'\b{a}kg\b', x, re.IGNORECASE) or                 re.search(rf'\b{a} kilo\b', x, re.IGNORECASE) or re.search(rf'\b{a} kg\b', x, re.IGNORECASE):
+                elif re.search(rf"\b{a}[ ]kilo\b", x, re.IGNORECASE) or re.search(rf"\b{a}[ ]kg\b", x, re.IGNORECASE):
                     value = (weights_dict[a], 'kg')
-                elif re.search(rf'\b{a}oz\b', x, re.IGNORECASE) or re.search(rf'\b{a} oz\b', x, re.IGNORECASE):
+                elif re.search(rf"\b{a}[ ]uncj\w\b", name, re.IGNORECASE):
                     value = (weights_dict[a], 'oz')
                 if value is not None:
                     break
@@ -81,22 +76,22 @@ def find_weight(x):
                         found = True
                         break
                     else:
-                        value = (0, 'inne')
+                        value = (0, 'other')
 
     if value[1] == 'g':
         weight_in_oz = value[0]/31.1034768
     elif value[1] == 'kg':
         weight_in_oz = value[0]*1000/31.1034768
-    elif value[1] == 'inne':
+    elif value[1] == 'other':
         weight_in_oz = 0
     else:
         weight_in_oz = value[0]
-    if value[1] == 'inne':
+    if value[1] == 'other':
         return_string = (value[1], str(weight_in_oz))
     else:
+#         print(value)
         return_string = (rev_weight_dict[value[1]][value[0]], str(weight_in_oz))
     return return_string
-
 
 
 
@@ -120,7 +115,7 @@ for x in range(len(srebrnaMennicaUrlsPaged)):
             metal = 'Silver'
         else: metal = 'Gold'
         name = product.find('div', class_='product-description').find('a', class_='noeffect').text
-        name = name.replace('uncja', 'oz').replace('uncje', 'oz').replace('uncji', 'oz')
+        #name = name.replace('uncja', 'oz').replace('uncje', 'oz').replace('uncji', 'oz')
         price = product.find('div', class_='product-price-and-shipping').find('span', class_='price').text
 
         price = price.replace('\xc2\xa0z\xc5\x82', 'PLN')
@@ -161,36 +156,31 @@ df['PRICE_PLN']= (df['PRICE']).round(2).apply(lambda x: '%.2f' % x).astype(str).
 data_dzis = datetime.datetime.now().strftime('%Y-%m-%d')
 data_godzina = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 df['LOAD_TIME'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-
-# In[7]:
+df.drop_duplicates(inplace=True)
+df.drop(df[((df.NAME.str.contains('srebrna', case=False)) | \
+            (df.NAME.str.contains('srebra', case=False))) & \
+            (df.METAL=='Gold')]
+        .index, inplace=True)
+df.drop(df[df.PRICE==0].index, inplace=True)
 
 
 dtype = {c:types.VARCHAR(df[c].str.len().max())
         for c in df.columns[df.dtypes == 'object'].tolist()}
-#df[['WEIGHT', 'NAME', 'PRICE', 'PRICE_PER_OZ', 'PRICE_PLN', 'PRICE_PER_OZ_PLN', 'CURRENCY', 'AVAILABILITY', 'LINK', 'SHOP', 'IMG_LINK']].to_excel('C:\\Users\\user\\Desktop\\srebro\\srebrnamennica_'+data_dzis+'.xlsx', index=False)
-#df.to_excel('C:\\Users\\user\\Desktop\\srebro\\srebrnamennica_full_'+data_dzis+'.xlsx', index=False)
+path = DB_PATH
+conn = sqlite3.connect(path)
+df[['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK',\
+    'PRICE', 'LOAD_TIME', 'SHOP', 'IMG_LINK','METAL', 'PRICE_PLN', 'PRICE_PER_OZ_PLN']]\
+.to_sql('compare_app_pricings_all', conn, if_exists='append', index=False,  chunksize=1000)
 
+cur = conn.cursor()
 
-# In[8]:
-
-
-db_string_mysql = 'mysql://wladzioo:Mnop)(!@#@wladzioo.mysql.eu.pythonanywhere-services.com:3306/wladzioo$testdb?charset=utf8'
-# db_string_mysql = 'mysql://wladzioo:Mnop)(!@#@wladzioo.mysql.pythonanywhere-services.com:3306/wladzioo$testdb'
-engine = create_engine(db_string_mysql, pool_recycle=280)
-df[['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK', 'PRICE', 'LOAD_TIME', 'SHOP', 'IMG_LINK','METAL', 'PRICE_PLN', 'PRICE_PER_OZ_PLN']].to_sql('compare_app_pricings_all', engine, if_exists='append', index=False, dtype=dtype, chunksize=1000)
-
-
-# In[9]:
-
-
-from sqlalchemy import text
-with engine.connect().execution_options(autocommit=True) as conn:
-    conn.execute(text("DELETE from compare_app_pricings where SHOP = 'SrebrnaMennica'"))
-df[['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK', 'PRICE', 'LOAD_TIME', 'SHOP', 'IMG_LINK','METAL', 'PRICE_PLN', 'PRICE_PER_OZ_PLN']].to_sql('compare_app_pricings', engine, if_exists='append', index=False, dtype=dtype, chunksize=1000)
+cur.execute("DELETE from compare_app_pricings where SHOP = 'SrebrnaMennica'")
+conn.commit()
+df[['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK',\
+  'PRICE', 'LOAD_TIME', 'SHOP', 'IMG_LINK','METAL', 'PRICE_PLN', 'PRICE_PER_OZ_PLN']]\
+.to_sql('compare_app_pricings', conn, if_exists='append', index=False, chunksize=1000)
 
 try:
-    engine.dispose()
     conn.close()
 except Exception as e:
     print(e)

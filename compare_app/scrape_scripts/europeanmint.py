@@ -1,30 +1,22 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 from bs4 import BeautifulSoup as bs
 import requests
 import pandas as pd
-from sqlalchemy import types, create_engine, sql
+from sqlalchemy import types, sql
 import re
 import numpy as np
 import json
+import datetime
+
+import sqlite3
+from db_path import DB_PATH
+
 europeanMintUrls = ['https://www.europeanmint.com/silver-bullion/', 'https://www.europeanmint.com/gold-bullion/']
-
-
-# In[2]:
-
 
 nbpUrl = 'http://api.nbp.pl/api/exchangerates/rates/a/eur/'
 jsonString = json.loads((requests.get(nbpUrl)).text)
 currency = jsonString['code']
 rateDate=jsonString['rates'][0]['effectiveDate']
 rateVal=jsonString['rates'][0]['mid']
-
-
-# In[3]:
 
 
 def find_weight(x):
@@ -76,9 +68,6 @@ def find_weight(x):
     return ret_val
 
 
-# In[4]:
-
-
 weights, weight_nums, names, prices, availability, links, img_links, price_val, price_curr, metals= ([] for i in range(10))
 for x in range(len(europeanMintUrls)):
     r = requests.get(europeanMintUrls[x])
@@ -117,17 +106,12 @@ for x in range(len(europeanMintUrls)):
             #print('{} {} {} {} {} {} {}'.format(name.text, price, weight, link, img_link, weight_tuple, av))
 
 
-# In[5]:
-
-
 price_val = []
 price_curr = []
 for x in prices:
     price_curr.append(x[x.find('€')])
     price_val.append(x[x.find('€')+1:len(x)].replace(',',''))
 
-
-# In[6]:
 
 
 df=pd.DataFrame()
@@ -149,45 +133,32 @@ df['PRICE_PER_OZ_PLN'] = (df['PRICE']/df['OZ']).round(2)
 df['PRICE_PER_OZ_PLN'] = df['PRICE_PER_OZ_PLN'].round(2).apply(lambda x: '%.2f' % x).replace('inf','-').astype(str).apply(lambda x: x+' zł' if x!='-' else x).apply(lambda x: x.replace('.',','))
 df['PRICE_PLN']= (df['PRICE']).round(2).apply(lambda x: '%.2f' % x).astype(str).apply(lambda x: x+' zł' if x!='-' else x).apply(lambda x: x.replace('.',','))
 
-import datetime
+
 data_dzis = datetime.datetime.now().strftime('%Y-%m-%d')
 data_godzina = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 df['LOAD_TIME'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-
-# In[7]:
 
 
 dtype = {c:types.VARCHAR(df[c].str.len().max())
         for c in df.columns[df.dtypes == 'object'].tolist()}
 
 
-# In[8]:
+path = DB_PATH
+conn = sqlite3.connect(path)
+df[['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK',\
+    'PRICE', 'LOAD_TIME', 'SHOP', 'IMG_LINK','METAL', 'PRICE_PLN', 'PRICE_PER_OZ_PLN']]\
+.to_sql('compare_app_pricings_all', conn, if_exists='append', index=False,  chunksize=1000)
 
+cur = conn.cursor()
 
-# df[['WEIGHT', 'NAME', 'PRICE', 'PRICE_PER_OZ', 'PRICE_PLN', 'PRICE_PER_OZ_PLN', 'CURRENCY', 'AVAILABILITY', 'LINK', 'SHOP', 'IMG_LINK']].to_excel('C:\\Users\\user\\Desktop\\srebro\\europeanmint_'+data_dzis+'.xlsx', index=False)
-# df.to_excel('C:\\Users\\user\\Desktop\\srebro\\europeanmint_full_'+data_dzis+'.xlsx', index=False)
-
-
-# In[9]:
-
-
-# db_string_mysql = 'mysql://root:Djngblnapp!@#@127.0.0.1:3306/testdb?charset=utf8'
-db_string_mysql = 'mysql://wladzioo:Mnop)(!@#@wladzioo.mysql.eu.pythonanywhere-services.com:3306/wladzioo$testdb?charset=utf8'
-engine = create_engine(db_string_mysql, pool_recycle=280)
-df[['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK', 'PRICE', 'LOAD_TIME', 'SHOP', 'IMG_LINK','METAL', 'PRICE_PLN', 'PRICE_PER_OZ_PLN']].to_sql('compare_app_pricings_all', engine, if_exists='append', index=False, dtype=dtype, chunksize=1000)
-
-
-# In[10]:
-
-
-from sqlalchemy import text
-with engine.connect().execution_options(autocommit=True) as conn:
-    conn.execute(text("DELETE from compare_app_pricings where SHOP = 'EuropeanMint'"))
-df[df['AVAILABILITY'].apply(lambda x: x.strip())!='Out of stock'][['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK', 'PRICE', 'LOAD_TIME', 'SHOP', 'IMG_LINK','METAL', 'PRICE_PLN', 'PRICE_PER_OZ_PLN']].to_sql('compare_app_pricings', engine, if_exists='append', index=False, dtype=dtype, chunksize=1000)
+cur.execute("DELETE from compare_app_pricings where SHOP = 'EuropeanMint'")
+conn.commit()
+df[df['AVAILABILITY'].apply(lambda x: x.strip())!='Out of stock']\
+[['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK',\
+  'PRICE', 'LOAD_TIME', 'SHOP', 'IMG_LINK','METAL', 'PRICE_PLN', 'PRICE_PER_OZ_PLN']]\
+.to_sql('compare_app_pricings', conn, if_exists='append', index=False, chunksize=1000)
 
 try:
-    engine.dispose()
     conn.close()
 except Exception as e:
     print(e)

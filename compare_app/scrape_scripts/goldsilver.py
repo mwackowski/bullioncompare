@@ -5,7 +5,7 @@ import numpy as np
 from sqlalchemy import types, create_engine, sql
 import json
 
-nbpUrl = 'http://api.nbp.pl/api/exchangerates/rates/a/usd/'
+nbpUrl = 'http://api.nbp.pl/api/exchangerates/rates/a/eur/'
 jsonString = json.loads((requests.get(nbpUrl)).text)
 currency = jsonString['code']
 rateDate=jsonString['rates'][0]['effectiveDate']
