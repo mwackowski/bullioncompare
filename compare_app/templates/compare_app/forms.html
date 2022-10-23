@@ -147,11 +147,11 @@
   <th></th>
   <th>Nazwa</th>
   <th>Waga</th>
-  <th>Cena</th>
+  <th class="col-sm-1">Cena</th>
   <!--<th>Cena/oz</th>-->
   <!--<th>Metal</th>-->
   <th>Sklep</th>
-  <!-- <th class="col-md-1">LOAD_TIME</th> -->
+  <th class="col-sm-2">Data odświeżenia</th>
 </tr>
   </thead>
   <tbody>
@@ -175,7 +175,7 @@
               data-img={{x.IMG_LINK}} href = '{{x.LINK}}'>{{x.SHOP}}</a>
             {%endif%}
             </td>
-             <!-- <td>{{x.LOAD_TIME}}</td> -->
+             <td>{{x.LOAD_TIME}}</td>
           </tr>
           {% endfor %}
   </tbody>

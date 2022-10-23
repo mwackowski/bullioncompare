@@ -17,17 +17,16 @@ urls_final = {}
 for k, v in urls_base.items():
     for x in v:
         r = requests.get(x)
-        soup = bs(r.text, 'lxml')
+        soup = bs(r.text, 'html.parser')
         paginator = soup.find('p', class_='woocommerce-result-count').text
         # print(x, paginator)
         if paginator.strip() == 'Wyświetlanie jednego wyniku' or paginator.find('wszystkich') != -1:
             page_no=1
         else:
-            p_list = paginator.strip().split(' ')
-            first=p_list[1][p_list[1].find('–')+1:]
-            last = p_list[3]
-            page_no = math.ceil(int(last)/int(first))
-        for pages in range(1, page_no+1):
+            result_count = int(re.search('\d+ wyników', paginator).group(0).replace('wyników', '').strip())
+            max_pages = math.ceil(result_count/24)
+
+        for pages in range(1, max_pages+1):
             if k == 'Silver':
                 srebro.append(f'{x}page/{pages}/')
             else:
@@ -130,7 +129,7 @@ try:
 except RuntimeError as e:
     print(e)
 
-weights, weight_nums, names, prices, links, img_links, price_val, price_curr, metals= ([] for i in range(9))
+weights, weight_nums, names, prices, links, img_links, price_val, price_curr, metals, availability = ([] for i in range(10))
 
 for x in outcome:
     soup = bs(x[0], 'lxml')
@@ -140,7 +139,11 @@ for x in outcome:
             img = l.find('img', class_='attachment-woocommerce_thumbnail')['data-lazy-src']
             name = l.find('h2', class_='woocommerce-loop-product__title').text
             price = l.find('span', class_='price').text
-
+            available = l.find('a', class_=re.compile('button product_type_simple'))
+            if 'ajax_add_to_cart' in available['class']:
+                available = True
+            else:
+                available = False
             href = l.find('a', class_='woocommerce-LoopProduct-link')['href']
             weights.append(find_weight(name)[0])
             weight_nums.append(find_weight(name)[1])
@@ -150,7 +153,7 @@ for x in outcome:
             links.append(href)
             img_links.append(img)
             price_val.append(find_price(price))
-
+            availability.append(available)
             metals.append(x[1])
             # print(name.strip(), price.strip(), href, find_weight(name), metal, find_price(price))
         except Exception as e:
@@ -166,7 +169,7 @@ df['PRICE']=price_val
 df['PRICE_PER_OZ'] = (df['PRICE']/df['OZ']).round(2)
 df['PRICE_PER_OZ'] = df['PRICE_PER_OZ'].replace(np.inf,'n/a').astype(str)
 df['CURRENCY']='PLN'
-df['AVAILABILITY']='available'
+df['AVAILABILITY']=availability
 df['LINK']=links
 df['SHOP']='SzlachetneInwestycje'
 df['IMG_LINK']=img_links
@@ -195,7 +198,7 @@ cur = conn.cursor()
 
 cur.execute("DELETE from compare_app_pricings where SHOP = 'SzlachetneInwestycje'")
 conn.commit()
-df[['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK',\
+df[df.AVAILABILITY==True][['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK',\
   'PRICE', 'LOAD_TIME', 'SHOP', 'IMG_LINK','METAL', 'PRICE_PLN', 'PRICE_PER_OZ_PLN']]\
 .to_sql('compare_app_pricings', conn, if_exists='append', index=False, chunksize=1000)
 

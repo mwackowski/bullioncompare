@@ -7,6 +7,9 @@ import json
 import asyncio
 import aiohttp
 
+from db_path import DB_PATH
+import sqlite3
+
 nbpUrl = 'http://api.nbp.pl/api/exchangerates/rates/a/eur/'
 jsonString = json.loads((requests.get(nbpUrl)).text)
 currency = jsonString['code']
@@ -100,7 +103,7 @@ header = {'Accept-Encoding': 'gzip', 'accept-language': '*'}
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 outcome = loop.run_until_complete(main())
-loop.close()
+# loop.close()
 
 
 import time
@@ -165,9 +168,9 @@ df['LOAD_TIME'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 dtype = {c:types.VARCHAR(df[c].str.len().max())
         for c in df.columns[df.dtypes == 'object'].tolist()}
-path = r'C:\Users\user\python\django_comparer\env\bullioncompare\db.sqlite3'
 
-import sqlite3
+
+path = DB_PATH
 conn = sqlite3.connect(path)
 df[['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK',\
     'PRICE', 'LOAD_TIME', 'SHOP', 'IMG_LINK','METAL', 'PRICE_PLN', 'PRICE_PER_OZ_PLN']]\

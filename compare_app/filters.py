@@ -25,15 +25,15 @@ class PriceFilter(django_filters.FilterSet):
         ('0', 'inne')
         )
     SHOPS = (( 'GoldSilver', 'GoldSilver.be'),
-		('EuropeanMint', 'Europeanmint.com'),
-		('SrebrnaMennica','SrebrnaMennica.pl'),
-		('SzlachetneInwestycje', 'SzlachetneInwestycje.pl'),
+  #  ('EuropeanMint', 'Europeanmint.com'),
+    ('SrebrnaMennica','SrebrnaMennica.pl'),
+    ('SzlachetneInwestycje', 'SzlachetneInwestycje.pl'),
         ('MetalMarket','MetalMarket.eu'),
         ('Goldon', 'Goldon.pl'),
         ('Silbertresor', 'Silbertresor.de'),
         ('Emk', 'Emk.com'),
         ('79thElement', '79element.pl'),
-		)
+    )
 
     METALS = (('Silver', 'Srebro'), ('Gold', 'Złoto'))
 

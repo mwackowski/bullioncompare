@@ -60,7 +60,7 @@ def find_weight(x):
                     value = (weights_dict[a], 'g')
                 elif re.search(rf"\b{a}[ ]kilo\b", x, re.IGNORECASE) or re.search(rf"\b{a}[ ]kg\b", x, re.IGNORECASE):
                     value = (weights_dict[a], 'kg')
-                elif re.search(rf"\b{a}[ ]uncj\w\b", name, re.IGNORECASE):
+                elif re.search(rf"\b{a}[ ]uncj\w\b", name, re.IGNORECASE) or re.search(rf"\b{a}[ ]oz\b", name, re.IGNORECASE):
                     value = (weights_dict[a], 'oz')
                 if value is not None:
                     break
@@ -121,6 +121,11 @@ for x in range(len(srebrnaMennicaUrlsPaged)):
         price = price.replace('\xc2\xa0z\xc5\x82', 'PLN')
         weight = find_weight(name)[0]
         weight_num = float(find_weight(name)[1])
+        available = product.find('a', {'data-button-action': 'add-to-cart'}).get('disabled')
+        if available == '':
+            availability.append(False)
+        else:
+            availability.append(True)
         weights.append(weight)
         weight_nums.append(weight_num)
         price_val.append(find_price(price))
@@ -144,7 +149,7 @@ df['PRICE']=price_val
 df['PRICE_PER_OZ'] = (df['PRICE']/df['OZ']).round(2)
 df['PRICE_PER_OZ'] = df['PRICE_PER_OZ'].replace(np.inf,'n/a').astype(str)
 df['CURRENCY']=price_curr
-df['AVAILABILITY']='available'
+df['AVAILABILITY']=availability
 df['LINK']=links
 df['SHOP']='SrebrnaMennica'
 df['IMG_LINK']=img_links
@@ -176,7 +181,7 @@ cur = conn.cursor()
 
 cur.execute("DELETE from compare_app_pricings where SHOP = 'SrebrnaMennica'")
 conn.commit()
-df[['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK',\
+df[df.AVAILABILITY==True][['NAME', 'WEIGHT', 'OZ', 'PRICE_TEXT', 'PRICE_PER_OZ', 'CURRENCY', 'AVAILABILITY', 'LINK',\
   'PRICE', 'LOAD_TIME', 'SHOP', 'IMG_LINK','METAL', 'PRICE_PLN', 'PRICE_PER_OZ_PLN']]\
 .to_sql('compare_app_pricings', conn, if_exists='append', index=False, chunksize=1000)
 
